@@ -1,26 +1,20 @@
-<template>
-  <div id="app">
-    <Suspense>
-      <template #default>
-        <MailScreen />
-      </template>
-      <template #fallback>
-        Loading...
-      </template>
-    </Suspense>
-  </div>
-</template>
-
-<script lang="ts">
-import MailScreen from '@/components/MailScreen.vue';
-
-export default {
-  name: 'App',
-  components: {
-    MailScreen
-  }
-};
+<script lang="ts" setup>
+import MailTable from '@/components/MailTable.vue';
 </script>
+
+<template>
+  <h1>VMail Inbox</h1>
+
+
+  <Suspense>
+    <template #default>
+      <MailTable />
+    </template>
+    <template #fallback>
+      Loading...
+    </template>
+  </Suspense>
+</template>
 
 <style>
 #app {
@@ -169,4 +163,5 @@ input[type='checkbox']:checked {
 .bulk-action-bar .checkbox {
   margin-right: 6px;
   margin-left: 3px;
-}</style>
+}
+</style>

@@ -1,12 +1,12 @@
 {
-  "name": "vue-3-demo",
-  "version": "0.1.0",
+  "name": "vue-3-vite-demo",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port=3002",
     "build": "vite build",
-    "serve": "vite preview",
-    "lint": "vue-cli-service lint",
+    "serve": "vite preview --port=3002",
+    "lint": "vite lint",
     "lint:fix": "eslint --ext .js,.vue --ignore-path .gitignore --fix src"
   },
   "dependencies": {

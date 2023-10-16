@@ -1,84 +1,50 @@
+<script lang="ts" setup>
+import { format } from 'date-fns';
+import MailView from '@/components/MailView.vue';
+import axios from 'axios';
+import { onBeforeMount, ref } from 'vue';
+
+const openedEmail = ref(null);
+const emails = ref([]);
+
+const openEmail = (email) => {
+  email.read = true;
+  updateEmail(email);
+  openedEmail.value = email;
+};
+const archiveEmail = (email) => {
+  email.archived = true;
+  updateEmail(email);
+};
+
+const sortedEmails = () => emails.value.sort((e1, e2) => e1.sentAt < e2.sentAt ? 1 : -1);
+
+const unarchivedEmails = () => sortedEmails().filter(e => !e.archived);
+
+const updateEmail = (email) => axios.put(`http://localhost:3002/emails/${email.id}`, email);
+
+onBeforeMount(async () => {
+  emails.value = (await axios.get('http://localhost:3002/emails')).data;
+});
+
+</script>
+
 <template>
   <table class="mail-table">
     <tbody>
-      <tr v-for="email in emails" 
-          :key="email.id"
-          :class="[email.read ? 'read': '', 'clickable']"
-          @click="openEmail(email)">
+      <tr v-for="email in unarchivedEmails" :key="email.id" :class="['clickable', email.read ? 'read' : '']"
+        @click="openEmail(email)">
         <td>
-          <input type="checkbox"
-                 :checked="emailSelection.emails.has(email)"
-                 @click="emailSelection.toggle(email)" />
+          <input type="checkbox" />
         </td>
-        <td>{{email.from}}</td>
+        <td>{{ email.from }}</td>
         <td>
-          <p><strong>{{email.subject}}</strong> - {{email.body}}</p>
+          <p><strong>{{ email.subject }}</strong> - {{ email.body }}</p>
         </td>
-        <td class="date">{{format(new Date(email.sentAt), 'MMM do yyyy')}}</td>
+        <td class="date">{{ format(new Date(email.sentAt), 'MMM do yyyy') }}</td>
         <td><button @click="archiveEmail(email)">Archive</button></td>
       </tr>
     </tbody>
   </table>
-
-  <ModalView v-if="openedEmail" :closeModal="() => { openedEmail = null; }">
-    <MailView :email="openedEmail"
-              :changeEmail="(args) => changeEmail(openedEmail, args)" />
-  </ModalView>
+  <MailView v-if="openedEmail" :email="openedEmail" />
 </template>
-
-<script>
-  import { format } from 'date-fns';
-  import MailView from '@/components/MailView.vue';
-  import ModalView from '@/components/ModalView.vue';
-  import { useEmailSelection } from '../composition/useEmailSelection';
-  import axios from 'axios';
-
-  export default {
-    async setup(){
-      return {
-        format,
-        openedEmail: null,
-        emailSelection: useEmailSelection()
-      }
-    },
-    components: {
-      MailView,
-      ModalView,
-    },
-    methods: {
-      openEmail(email){
-        this.openedEmail = email;
-
-        if(email) {
-          email.read = true
-          axios.put(`http://localhost:3000/emails/${email.id}`, email)
-        }
-      },
-      archiveEmail(email){
-        email.archived = true;
-        axios.put(`http://localhost:3000/emails/${email.id}`, email)
-      },
-      changeEmail(email, {indexChange, toggleArchive, toggleRead, save, closeModal}) {
-        if(toggleArchive) { email.archived = !email.archived }
-        if(toggleRead) { email.read = !email.read }
-        if(save) { axios.put(`http://localhost:3000/emails/${email.id}`, email) }
-        if(closeModal) { this.openedEmail = null; return null; }
-
-        if(indexChange) {
-          let index = this.emails.findIndex(e => e == email);
-          this.openEmail(this.emails[index + indexChange])
-        }
-      }
-    },
-    props: {
-      emails: {
-        type: Array,
-        required: true
-      }
-    }
-  }
-</script>
-
-<style scoped>
-
-</style>
